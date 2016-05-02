@@ -87,76 +87,9 @@ names(data)[2]<-c('Age')
 dataTOT<-subset(data, Age == 'Tot')
 dataTOT<-dataTOT[order(dataTOT$Cohort),]
 
-#Create subtable with northern type
-dataN <- subset(data, Type==3)
-dataTOT.N <- subset(dataN, Age =='Tot')
-#Create subtable with southern type
-dataS <- subset(data, Type==4)
-dataTOT.S <- subset(dataS, Age =='Tot')
+############## Back-calculation #####################
+#Relationship between Increment value and length
 
-dataTOT.Type<-subset(dataTOT, Type==3 | Type==4)
-
-plot(y=dataTOT.Type$Length,x=dataTOT.Type$IncValue,col=as.factor(dataTOT.Type$Type))
-legend(7,15,unique(dataTOT.Type$Type),col=1:length(dataTOT.Type$Type),pch=1)
-############## Back-calculation try #####################
-LM.Type <- lm(Length~IncValue*as.factor(Type),data=dataTOT.Type)
-summary(LM.Type)
-
-visreg(LM.Type,'IncValue', by='Type')
-#### Distinction between N and S
-#Relationship between length and increment size at capture 
-#Check relationship between length and scale size at capture
-xyplot(dataTOT.N$Length~dataTOT.N$IncValue|as.factor(dataTOT.N$Cohort),cex=0.5, pch=20,xlab="Increment value",ylab="Length", main="Length~Increment value")
-xyplot(dataTOT.S$Length~dataTOT.S$IncValue|as.factor(dataTOT.S$Cohort),cex=0.5, pch=20,xlab="Increment value",ylab="Length", main="Length~Increment value")
-
-
-
-unique(dataTOT.N$Cohort)
-#[1] 1930 1932 1931 1933 1934 1935 1936 1937 1938 1939 1940 1941 1943 1942 1944 1945 1946 1947 1948 1949 1950 1951 1952
-#[24] 1953 1954 1955 1956 1958 1959 1960 1957 1961 1962 1963 1964 1965 1966 1967 1969 1968
-LM.N<-lm(Length~IncValue,data=dataTOT.N)
-summary(LM.N)
-
-# Coefficients:
-#   Estimate Std. Error t value Pr(>|t|)    
-# (Intercept) 10.13270    0.06345   159.7   <2e-16 ***
-#   IncValue     3.64898    0.01058   344.8   <2e-16 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-# 
-# Residual standard error: 2.043 on 49032 degrees of freedom
-# Multiple R-squared:  0.708,	Adjusted R-squared:  0.708 
-# F-statistic: 1.189e+05 on 1 and 49032 DF,  p-value: < 2.2e-16
-
-dataTOT.N$Pred <- coef(LM.N)[1]+coef(LM.N)[2]*dataTOT.N$IncValue
-
-unique(dataTOT.S$Cohort)
-#[1] 1931 1930 1932 1933 1934 1935 1936 1937 1938 1939 1940 1941 1943 1942 1944 1945 1947 1946 1948 1949 1950 1951 1952
-#[24] 1953 1954 1955 1956 1957 1958 1959 1960 1963 1961 1962 1964 1965 1966 1967 1968 1969 1970 1971 1972 1973
-
-LM.S<-lm(Length~IncValue,data=dataTOT.S)
-summary(LM.S)
-
-# Coefficients:
-#   Estimate Std. Error t value Pr(>|t|)    
-# (Intercept)  7.88063    0.07779   101.3   <2e-16 ***
-#   IncValue     3.96626    0.01324   299.5   <2e-16 ***
-#   ---
-#   Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-# 
-# Residual standard error: 2.148 on 29991 degrees of freedom
-# Multiple R-squared:  0.7494,	Adjusted R-squared:  0.7494 
-# F-statistic: 8.97e+04 on 1 and 29991 DF,  p-value: < 2.2e-16
-
-dataTOT.S$Pred <- coef(LM.S)[1]+coef(LM.S)[2]*dataTOT.S$IncValue
-
-
-par(mfrow=c(1,2))
-plot(y=dataTOT.N$Length, x=dataTOT.N$IncValue,ylim=c(0,40),xlim=c(0,10),xlab="Increment value",ylab="Length", main="Length~Increment value N")
-points(y=dataTOT.N$Pred, x=dataTOT.N$IncValue,col='red',ylim=c(0,40),xlim=c(0,10))
-plot(y=dataTOT.S$Length, x=dataTOT.S$IncValue,ylim=c(0,40),xlim=c(0,10),xlab="Increment value",ylab="Length", main="Length~Increment value S")
-points(y=dataTOT.S$Pred, x=dataTOT.S$IncValue,col='red',ylim=c(0,40),xlim=c(0,10))
-#Relationship by cohort
 data.list.BC<-lapply(unique(dataTOT$Cohort),
                      FUN=function (c) {
                        result = tryCatch(
@@ -177,58 +110,30 @@ names(data.coh.BC)<-c('a', 'b','Cohort')
 
 xyplot(dataTOT$Length~dataTOT$IncValue|as.factor(dataTOT$Cohort),cex=0.5, pch=20,xlab="Increment value",ylab="Length", main="Length~Increment value")
 
-#Risky cohorts: 2012,2011, 1983, 1984, 1985 1987, 1982, 1981, 1979
-#Examination of different cohorts
-
-data2009 <- subset(dataTOT, Cohort == 2009)
-data1985 <- subset(dataTOT, Cohort== 1985)
-data1983 <- subset(dataTOT, Cohort== 1983)
-
-plot(y=data2009$Length, x=data2009$IncValue,xlab="Increment value",ylab="Length", main="Length~Increment value")
-plot(y=data1985$Length, x=data1985$IncValue,xlab="Increment value",ylab="Length", main="Length~Increment value")
-plot(y=data1983$Length, x=data1983$IncValue,xlab="Increment value",ylab="Length", main="Length~Increment value")
-plot(y=dataTOT.2002$Length, x=dataTOT.2002$IncValue,xlab="Increment value",ylab="Length", main="Length~Increment value")
-
-#Test for 1983 Cohort
-
-
+#Including the a and b estimates in the table
 data.Pred.BC <- merge(data, data.coh.BC)
 
-
-
-
+#Scale size at capture
 ScTable <- subset(dataTOT, select=c('IncValue','Cohort','IndNum','MaxAge','Weight'))
 names(ScTable)[1]<- 'Sc'
 dataTable <- merge(ScTable,data.Pred.BC)
 
-
-data.1983 <- subset(dataTable, Cohort == 1983)
-dataTOT.1983 <- subset(data.1983, Age == 'Tot')
-#Plot IncValue-Weight relationship
 #Function to predict Lt
 XFun <- function(Lc,Sc,Si,a,b) {
   -(a/b)+((Lc+(a/b))*Si)/Sc
 }
 
 #Apply function
-Pred.BC <- apply(data.1983, 2, function(v,w,x,y,z) XFun(Lc=data.1983$Length,Sc=data.1983$Sc,Si=data.1983$IncValue,a=data.1983$a,data.1983$b))
+Pred.BC <- apply(dataTable, 2, function(v,w,x,y,z) XFun(Lc=dataTable$Length,Sc=dataTable$Sc,Si=dataTable$IncValue,a=dataTable$a,dataTable$b))
 Pred.BC <- as.data.frame(Pred.BC)
 names(Pred.BC)[1]<-c('Lt')
 
 #Put the estimated length in a table
-data.Pred.BC$Age <- as.numeric(data.Pred.BC$Age)
 data.1983$Lt <- Pred.BC$Lt
 
-xyplot(subset(data.1983, Age != 'Tot')$Lt~subset(data.1983, Age != 'Tot')$Age|as.factor(subset(data.1983, Age != 'Tot')$Cohort),cex=0.5, pch=20,xlab="Increment number",ylab="Length", main="Predicted length")
-xyplot(dataTOT.1983$Length~dataTOT.1983$MaxAge|as.factor(data.1983$Cohort),cex=1, pch=20,xlab="Increment number",ylab="Length", main="Length a capture")
-
 ##Length Weight relationship
-
-xyplot(dataTOT.1983$Weight~dataTOT.1983$Length|as.factor(data.1983$Cohort),cex=0.5, pch=20,xlab="Length (mm)",ylab="Weight", main="LW relationship")
-
-
 #Starting values for a and b
-mod.start <- lm(log(Weight)~log(Length),data=dataTOT.1983)
+mod.start <- lm(log(Weight)~log(Length),data=subset(dataTable, Age == 'Tot')
 summary(mod.start)
 # 
 b <- exp(coef(mod.start)[1]) #Intercept
@@ -236,50 +141,45 @@ a <- coef(mod.start)[2] #Slope
 
 
 #Weight / Length relationship for all cohorts
-# data.list.LW<-lapply(unique(dataTOT.2002$Cohort),
-#                   FUN=function (c) {
-#                     result = tryCatch(
-#                       nls(Weight~b*Length^(a) + 0,data=subset(dataTOT.2002,Cohort==c),start=list(a=a,b=b)),
-#                       error = function(e) NA
-#                     )
-#                   }
-# )
-# 
-# 
-# names(data.list.LW) <- unique(dataTOT$Cohort)
-# 
-# data.LW<-t(sapply(which(!is.na(data.list.LW)),FUN=function (i) coef(data.list.LW[[i]])))
-# data.LW<-as.data.frame(data.LW)
-# rownames(data.LW)<-unique(dataTOT$Cohort)[which(!is.na(data.list.LW))] #Changement du nom des lignes
-# data.LW$Cohort<-unique(dataTOT$Cohort)[which(!is.na(data.list.LW))] #Ajout d'une colonne cohorte
-# names(data.LW)<-c('aW', 'bW','Cohort')
-# 
-# data.PredLW <- merge(dataTable, data.LW)
+data.list.LW<-lapply(unique(dataTOT$Cohort),
+                   FUN=function (c) {
+                     result = tryCatch(
+                       nls(Weight~b*Length^(a) + 0,data=subset(dataTOT,Cohort==c),start=list(a=a,b=b)),
+                      error = function(e) NA
+                    )
+                  }
+ )
+ 
 
+ names(data.list.LW) <- unique(dataTOT$Cohort)
 
-mod.1983 <- nls(Weight~b*Length^(a) + 0,data=dataTOT.1983,start=list(a=a,b=b))
-summary (mod.1983)
+data.LW<-t(sapply(which(!is.na(data.list.LW)),FUN=function (i) coef(data.list.LW[[i]])))
+data.LW<-as.data.frame(data.LW)
+rownames(data.LW)<-unique(dataTOT$Cohort)[which(!is.na(data.list.LW))] #Changement du nom des lignes
+data.LW$Cohort<-unique(dataTOT$Cohort)[which(!is.na(data.list.LW))] #Ajout d'une colonne cohorte
+names(data.LW)<-c('aW', 'bW','Cohort')
 
-a <- coef(mod.2002)[1]
-b<- coef(mod.2002)[2]
+data.PredLW <- merge(dataTable, data.LW)
+
 
 #Function to predict weights
 LWFun <- function(Z,a,b) {
   b*Z^a
 }
 
-dPRed <- data.1983
 #Apply function
-PredLW <- apply(dPRed, 2, function(x,y,z) LWFun(Z=dPRed$Lt,a=a,b=b))
+PredLW <- apply(data.PredLW, 2, function(x,y,z) LWFun(Z=data.PredLW$Lt,a=data.PredLW$aW,b=data.PredLW$bW))
 PredLW <- as.data.frame(PredLW)
 names(PredLW)[1]<-c('Wt')
 
 #Put the estimated weight in a table
-data.1983$Wt <- PredLW$Wt
+dataTable$Wt <- PredLW$Wt
 
-xyplot(subset(data.1983, Age != 'Tot')$Wt~subset(data.1983, Age != 'Tot')$Age|as.factor(subset(data.1983, Age != 'Tot')$Cohort),cex=0.5, pch=20,xlab="Age",ylab="Weight", main="Predicted Weight")
-xyplot(dataTOT.1983$Weight~dataTOT.1983$MaxAge|as.factor(dataTOT.1983$Cohort),cex=0.5, pch=20,xlab="Age",ylab="Weight", main="Weight at capture")
 
+
+
+
+##################### TODO  ########################
 ########################### Model ######################################
 
 
